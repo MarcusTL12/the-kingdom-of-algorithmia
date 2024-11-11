@@ -4,6 +4,8 @@ use std::{env, fmt::Display, fs::read_to_string, time::Instant};
 
 use home::home_dir;
 
+mod util;
+
 mod quest1;
 mod quest2;
 mod quest3;

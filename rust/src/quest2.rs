@@ -1,6 +1,6 @@
-use ndarray::{s, Array2, ArrayView2};
+use ndarray::Array2;
 
-use crate::{Quest, QuestResult};
+use crate::{util, Quest, QuestResult};
 
 pub const PARTS: Quest = [part1, part2, part3];
 
@@ -63,17 +63,11 @@ fn part3(mut input: String) -> QuestResult {
 
     let inscription = inscription.as_bytes();
 
-    let w = inscription
-        .iter()
-        .enumerate()
-        .find(|(_, &x)| x == b'\n')
-        .map(|(i, _)| i)
-        .unwrap();
+    let matrix = util::input_to_grid(inscription);
 
-    let h = inscription.len() / w;
-
-    let matrix = ArrayView2::from_shape([h, w + 1], inscription).unwrap();
-    let matrix = matrix.slice(s![.., 0..w]);
+    let &[h, w] = matrix.shape() else {
+        unreachable!()
+    };
 
     let mut bitmap = Array2::from_elem([h, w], false);
 
