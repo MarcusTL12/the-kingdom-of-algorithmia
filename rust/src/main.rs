@@ -9,6 +9,7 @@ mod util;
 mod quest1;
 mod quest2;
 mod quest3;
+mod quest4;
 
 #[derive(Debug)]
 enum QuestResult {
@@ -27,7 +28,8 @@ impl Display for QuestResult {
 
 type Quest = [fn(String) -> QuestResult; 3];
 
-const QUESTS: &[Quest] = &[quest1::PARTS, quest2::PARTS, quest3::PARTS];
+const QUESTS: &[Quest] =
+    &[quest1::PARTS, quest2::PARTS, quest3::PARTS, quest4::PARTS];
 
 fn load_input(quest: usize, part: usize, example: usize) -> String {
     let path = home_dir().unwrap().join("ec-input").join(if example == 0 {
