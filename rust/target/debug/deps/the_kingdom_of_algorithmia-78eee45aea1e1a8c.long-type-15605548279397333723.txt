@@ -1,0 +1,1 @@
+[ndarray::SliceInfo<[ndarray::SliceInfoElem; 2], ndarray::Dim<[usize; 2]>, ndarray::Dim<[usize; 2]>>; 1]
