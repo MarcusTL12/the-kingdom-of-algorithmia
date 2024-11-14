@@ -11,17 +11,18 @@ mod quest2;
 mod quest3;
 mod quest4;
 mod quest5;
+mod quest6;
 
 #[derive(Debug)]
 enum QuestResult {
-    // Text(String),
+    Text(String),
     Number(i64),
 }
 
 impl Display for QuestResult {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            // Self::Text(s) => s.fmt(f),
+            Self::Text(s) => s.fmt(f),
             Self::Number(n) => n.fmt(f),
         }
     }
@@ -35,6 +36,7 @@ const QUESTS: &[Quest] = &[
     quest3::PARTS,
     quest4::PARTS,
     quest5::PARTS,
+    quest6::PARTS,
 ];
 
 fn load_input(quest: usize, part: usize, example: usize) -> String {
