@@ -1,4 +1,4 @@
-#![feature(slice_as_chunks)]
+#![feature(slice_as_chunks, step_trait)]
 
 use std::{env, fmt::Display, fs::read_to_string, time::Instant};
 
@@ -10,6 +10,7 @@ mod quest1;
 mod quest2;
 mod quest3;
 mod quest4;
+mod quest5;
 
 #[derive(Debug)]
 enum QuestResult {
@@ -28,14 +29,19 @@ impl Display for QuestResult {
 
 type Quest = [fn(String) -> QuestResult; 3];
 
-const QUESTS: &[Quest] =
-    &[quest1::PARTS, quest2::PARTS, quest3::PARTS, quest4::PARTS];
+const QUESTS: &[Quest] = &[
+    quest1::PARTS,
+    quest2::PARTS,
+    quest3::PARTS,
+    quest4::PARTS,
+    quest5::PARTS,
+];
 
 fn load_input(quest: usize, part: usize, example: usize) -> String {
     let path = home_dir().unwrap().join("ec-input").join(if example == 0 {
-        format!("everybody_codes_e2024_q{quest}_p{part}.txt")
+        format!("everybody_codes_e2024_q{quest:02}_p{part}.txt")
     } else {
-        format!("everybody_codes_e2024_q{quest}_p{part}_ex{example}.txt")
+        format!("everybody_codes_e2024_q{quest:02}_p{part}_ex{example}.txt")
     });
 
     read_to_string(path).unwrap()
