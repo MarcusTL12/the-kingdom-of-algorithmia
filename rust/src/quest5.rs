@@ -1,4 +1,4 @@
-use std::iter::Step;
+use std::{collections::HashSet, iter::Step};
 
 use num_traits::PrimInt;
 
@@ -80,5 +80,33 @@ fn part2(input: String) -> QuestResult {
 }
 
 fn part3(input: String) -> QuestResult {
-    todo!("\n{input}")
+    let mut cols: [Vec<u16>; 4] = [const { Vec::new() }; 4];
+
+    for l in input.split('\n') {
+        for (col, x) in cols.iter_mut().zip(l.split_ascii_whitespace()) {
+            col.push(x.parse().unwrap());
+        }
+    }
+
+    let mut max_seen = 0;
+    let mut seen = HashSet::new();
+
+    for i in 0..usize::MAX {
+        let clapper = cols[i % 4].remove(0);
+        clap_into_col(&mut cols[(i + 1) % 4], clapper);
+
+        if seen.contains(&cols) {
+            break;
+        }
+
+        max_seen = max_seen.max(
+            cols.iter()
+                .map(|c| c[0])
+                .fold(0, |n, d| 10000 * n + (d as i64)),
+        );
+
+        seen.insert(cols.clone());
+    }
+
+    QuestResult::Number(max_seen)
 }
