@@ -1,10 +1,10 @@
-use ndarray::{s, ArrayView2, ArrayViewMut2};
+use ndarray::{ArrayView2, ArrayViewMut2, s};
 
-pub fn input_to_grid(input: &[u8]) -> ArrayView2<u8> {
+pub fn input_to_grid(input: &[u8]) -> ArrayView2<'_, u8> {
     let w = input
         .iter()
         .enumerate()
-        .find(|(_, &x)| x == b'\n')
+        .find(|&(_, &x)| x == b'\n')
         .map(|(i, _)| i)
         .unwrap();
 
@@ -15,11 +15,11 @@ pub fn input_to_grid(input: &[u8]) -> ArrayView2<u8> {
         .slice_move(s![.., 0..w])
 }
 
-pub fn input_to_grid_mut(input: &mut [u8]) -> ArrayViewMut2<u8> {
+pub fn input_to_grid_mut(input: &mut [u8]) -> ArrayViewMut2<'_, u8> {
     let w = input
         .iter()
         .enumerate()
-        .find(|(_, &x)| x == b'\n')
+        .find(|&(_, &x)| x == b'\n')
         .map(|(i, _)| i)
         .unwrap();
 
