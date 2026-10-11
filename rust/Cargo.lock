@@ -49,6 +49,7 @@ dependencies = [
  "num-traits",
  "priority-queue",
  "rayon",
+ "z3",
 ]
 
 [[package]]
@@ -87,6 +88,12 @@ dependencies = [
  "equivalent",
  "hashbrown",
 ]
+
+[[package]]
+name = "log"
+version = "0.4.34"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f9f8bd3e56ce4dfc153cf470fffbfa98c7620958b312ca5c3a4b8d5181fd13c6"
 
 [[package]]
 name = "matrixmultiply"
@@ -139,6 +146,12 @@ checksum = "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841"
 dependencies = [
  "autocfg",
 ]
+
+[[package]]
+name = "pkg-config"
+version = "0.3.34"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f6b464fbc74e149a392436b17d523f769e057cb6877f6a5c4618bc6f11800548"
 
 [[package]]
 name = "portable-atomic"
@@ -328,3 +341,22 @@ name = "windows_x86_64_msvc"
 version = "0.52.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "589f6da84c646204747d1270a2a5661ea66ed1cced2631d546fdfb155959f9ec"
+
+[[package]]
+name = "z3"
+version = "0.21.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "83c8c28827f094697c982c88a730ef2511b5cb551f86f532a0bba2723178a37a"
+dependencies = [
+ "log",
+ "z3-sys",
+]
+
+[[package]]
+name = "z3-sys"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1343ed2cd33696498898195eb63613ef7891d9353bbc33ddc87d0292c6e3b1e6"
+dependencies = [
+ "pkg-config",
+]
