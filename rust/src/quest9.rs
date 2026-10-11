@@ -1,6 +1,7 @@
 use std::{cmp::Reverse, collections::BTreeSet};
 
 use priority_queue::PriorityQueue;
+use rayon::{iter::ParallelIterator, str::ParallelString};
 
 use crate::{
     Quest,
@@ -61,6 +62,32 @@ fn part2(input: String) -> QuestResult {
     Number(ans as i64)
 }
 
+fn find_best_split(target: u32) -> u32 {
+    const STAMPS: &[u32] = &[
+        1, 3, 5, 10, 15, 16, 20, 24, 25, 30, 37, 38, 49, 50, 74, 75, 100, 101,
+    ];
+
+    let m = target / 2;
+
+    ((m - 50 + target % 2)..=m)
+        .map(|l| {
+            let h = target - l;
+
+            let nl = find_min_number_of_stamps(STAMPS, l);
+            let nh = find_min_number_of_stamps(STAMPS, h);
+
+            nl + nh
+        })
+        .min()
+        .unwrap()
+}
+
 fn part3(input: String) -> QuestResult {
-    todo!("\n{input}")
+    let ans: u32 = input
+        .par_split('\n')
+        .map(|x| x.parse().unwrap())
+        .map(find_best_split)
+        .sum();
+
+    Number(ans as i64)
 }
