@@ -9,11 +9,9 @@ use crate::{
 
 pub const PARTS: Quest = [part1, part2, part3];
 
-const STAPMS: [u32; 4] = [1, 3, 5, 10];
-const MAXSTAMP: u32 = 10;
-
-fn find_min_number_of_stamps(target: u32) -> u32 {
-    let h = |x: u32| x / MAXSTAMP;
+fn find_min_number_of_stamps(stamps: &[u32], target: u32) -> u32 {
+    let maxstamp = stamps.iter().max().unwrap();
+    let h = |x: u32| x / maxstamp;
 
     let mut queue = PriorityQueue::new();
     queue.push(target, Reverse(h(target)));
@@ -28,7 +26,7 @@ fn find_min_number_of_stamps(target: u32) -> u32 {
 
         seen.insert(rest);
 
-        for stamp in STAPMS.into_iter().rev() {
+        for &stamp in stamps.iter().rev() {
             if stamp <= rest && !seen.contains(&(rest - stamp)) {
                 queue.push_increase(
                     rest - stamp,
@@ -45,14 +43,22 @@ fn part1(input: String) -> QuestResult {
     let ans: u32 = input
         .split('\n')
         .map(|x| x.parse().unwrap())
-        .map(find_min_number_of_stamps)
+        .map(|x| find_min_number_of_stamps(&[1, 3, 5, 10], x))
         .sum();
 
     Number(ans as i64)
 }
 
 fn part2(input: String) -> QuestResult {
-    todo!("\n{input}")
+    let ans: u32 = input
+        .split('\n')
+        .map(|x| x.parse().unwrap())
+        .map(|x| {
+            find_min_number_of_stamps(&[1, 3, 5, 10, 15, 16, 20, 24, 25, 30], x)
+        })
+        .sum();
+
+    Number(ans as i64)
 }
 
 fn part3(input: String) -> QuestResult {
