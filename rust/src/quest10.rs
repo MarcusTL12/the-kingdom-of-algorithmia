@@ -1,53 +1,85 @@
+use ndarray::{ArrayView2, s};
+
 use crate::{
     Quest,
     QuestResult::{self, Text},
+    util::input_to_grid,
 };
 
 pub const PARTS: Quest = [part1, part2, part3];
 
-fn part1(input: String) -> QuestResult {
-    let mut lines = input.lines();
-
+fn solve_string(grid: ArrayView2<u8>) -> [u8; 16] {
     let mut vertical = [0u32; 4];
     let mut horizontal = [0u32; 4];
 
-    for _ in 0..2 {
-        let l = lines.next().unwrap();
+    for (i, c1) in (2..6).enumerate() {
+        for c2 in (0..2).chain(6..8) {
+            let c = grid[[c1, c2]];
+            horizontal[i] |= 1 << (c - b'A');
 
-        for (i, c) in l.chars().skip(2).take(4).enumerate() {
-            vertical[i] |= 1 << ((c as u8) - b'A');
+            let c = grid[[c2, c1]];
+            vertical[i] |= 1 << (c - b'A');
         }
     }
 
-    for h in &mut horizontal {
-        let l = lines.next().unwrap();
-        for c in l.chars().filter(|&c| c != '.') {
-            *h |= 1 << ((c as u8) - b'A');
-        }
+    let mut ans = [0; _];
+
+    for ((h, v), c) in horizontal
+        .into_iter()
+        .flat_map(|h| vertical.into_iter().map(move |v| (h, v)))
+        .zip(&mut ans)
+    {
+        *c = (h & v).trailing_zeros() as u8;
     }
 
-    for l in lines {
-        for (i, c) in l.chars().skip(2).take(4).enumerate() {
-            vertical[i] |= 1 << ((c as u8) - b'A');
-        }
-    }
+    ans
+}
 
-    let mut ans = String::new();
-    ans.reserve_exact(16);
+fn part1(mut input: String) -> QuestResult {
+    input.reserve_exact(1);
+    input.push('\n');
 
-    for h in horizontal {
-        for v in vertical {
-            let c = (h & v).trailing_zeros() as u8 + b'A';
+    let grid = input_to_grid(input.as_bytes());
 
-            ans.push(c as char);
-        }
-    }
+    let values = solve_string(grid);
+
+    let ans = values.into_iter().map(|c| (c + b'A') as char).collect();
 
     Text(ans)
 }
 
-fn part2(input: String) -> QuestResult {
-    todo!("\n{input}")
+fn part2(mut input: String) -> QuestResult {
+    let linelength = input.lines().next().unwrap().len();
+
+    input.reserve_exact(3);
+    input.push('\n');
+    input.push('\n');
+    input.push('\n');
+
+    let file_height = input.len() / ((linelength + 1) * 8 + 1);
+
+    dbg!(file_height);
+
+    let grid =
+        ArrayView2::from_shape([file_height, linelength + 1], input.as_bytes())
+            .unwrap();
+
+    println!("{:?}", grid);
+
+    let super_w = (linelength + 1) / 9;
+
+    dbg!(super_w);
+
+    let grid = grid.into_shape_with_order([]);
+
+    // let h = grid.dim().0 / 9;
+    // let w = grid.dim().1 / 9;
+
+    // let grid = grid.into_shape_with_order([9, 9, h, w]).unwrap();
+
+    // println!("{grid}");
+
+    todo!()
 }
 
 fn part3(input: String) -> QuestResult {
