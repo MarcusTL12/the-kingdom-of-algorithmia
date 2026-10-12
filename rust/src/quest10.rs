@@ -2,7 +2,7 @@ use ndarray::{ArrayView2, s};
 
 use crate::{
     Quest,
-    QuestResult::{self, Text},
+    QuestResult::{self, Number, Text},
     util::input_to_grid,
 };
 
@@ -35,6 +35,14 @@ fn solve_string(grid: ArrayView2<u8>) -> [u8; 16] {
     ans
 }
 
+fn runic_word(values: [u8; 16]) -> u32 {
+    values
+        .into_iter()
+        .enumerate()
+        .map(|(i, x)| (i as u32 + 1) * (x as u32 + 1))
+        .sum()
+}
+
 fn part1(mut input: String) -> QuestResult {
     input.reserve_exact(1);
     input.push('\n');
@@ -42,6 +50,8 @@ fn part1(mut input: String) -> QuestResult {
     let grid = input_to_grid(input.as_bytes());
 
     let values = solve_string(grid);
+
+    dbg!(runic_word(values));
 
     let ans = values.into_iter().map(|c| (c + b'A') as char).collect();
 
@@ -51,35 +61,32 @@ fn part1(mut input: String) -> QuestResult {
 fn part2(mut input: String) -> QuestResult {
     let linelength = input.lines().next().unwrap().len();
 
-    input.reserve_exact(3);
+    input.reserve_exact(2);
     input.push('\n');
     input.push('\n');
-    input.push('\n');
 
-    let file_height = input.len() / ((linelength + 1) * 8 + 1);
-
-    dbg!(file_height);
-
-    let grid =
-        ArrayView2::from_shape([file_height, linelength + 1], input.as_bytes())
-            .unwrap();
-
-    println!("{:?}", grid);
-
+    let block_size = (linelength + 1) * 8 + 1;
+    let file_height = input.len() / block_size;
     let super_w = (linelength + 1) / 9;
 
-    dbg!(super_w);
+    let ans: u32 =
+        ArrayView2::from_shape([file_height, block_size], input.as_bytes())
+            .unwrap()
+            .slice_move(s![.., 0..(block_size - 1)])
+            .rows()
+            .into_iter()
+            .flat_map(|r| {
+                r.into_shape_with_order([8, super_w, 9])
+                    .unwrap()
+                    .slice_move(s![.., .., 0..8])
+                    .permuted_axes([1, 0, 2])
+                    .into_outer_iter()
+            })
+            .map(solve_string)
+            .map(runic_word)
+            .sum();
 
-    let grid = grid.into_shape_with_order([]);
-
-    // let h = grid.dim().0 / 9;
-    // let w = grid.dim().1 / 9;
-
-    // let grid = grid.into_shape_with_order([9, 9, h, w]).unwrap();
-
-    // println!("{grid}");
-
-    todo!()
+    Number(ans as i64)
 }
 
 fn part3(input: String) -> QuestResult {
