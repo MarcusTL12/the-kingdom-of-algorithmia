@@ -129,21 +129,31 @@ fn shoot_meteor(height: u32, power: u32, mx: u32, my: u32) -> Option<[u32; 2]> {
 }
 
 fn find_best_shot(mx: u32, my: u32) -> Option<u32> {
-    let (_, Reverse(score)) = (0..mx.min(my))
-        .map(|delay| [mx - delay, my - delay])
-        .flat_map(|[mx, my]| {
-            (0..my.div_ceil(2))
-                .flat_map(|power| (0..3).map(move |height| (height, power)))
-                .filter_map(move |(height, power)| {
-                    shoot_meteor(height, power, mx, my)
-                        .map(|[_, y]| (y, Reverse((height + 1) * power)))
-                })
-        })
-        .max()?;
+    let mut best_height = None;
+    let mut best_score = None;
 
-    println!("{:?} -> {}", [mx, my], score);
+    for delay in 0..mx.min(my) {
+        let [mx, my] = [mx - delay, my - delay];
 
-    Some(score)
+        if best_height.is_some_and(|h| my <= 2 * h) {
+            break;
+        }
+
+        if let Some((h, Reverse(score))) = (0..my.div_ceil(2))
+            .flat_map(|power| (0..3).map(move |height| (height, power)))
+            .filter_map(move |(height, power)| {
+                shoot_meteor(height, power, mx, my)
+                    .map(|[_, y]| (y, Reverse((height + 1) * power)))
+            })
+            .max()
+            && best_height.is_none_or(|h2| h > h2)
+        {
+            best_height = Some(h);
+            best_score = Some(score);
+        }
+    }
+
+    best_score
 }
 
 fn part3(input: String) -> QuestResult {
