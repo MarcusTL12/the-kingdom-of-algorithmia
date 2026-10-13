@@ -8,7 +8,7 @@ use crate::{
     util::input_to_grid_mut,
 };
 
-pub const PARTS: Quest = [part1, part2, part3];
+pub const PARTS: Quest = [part1, part1, part3];
 
 fn shoot(
     grid: ArrayView2<u8>,
@@ -16,10 +16,6 @@ fn shoot(
     x: usize,
     power: usize,
 ) -> Option<[usize; 2]> {
-    // dbg!(x);
-    // dbg!(y);
-    // dbg!(power);
-
     let trj = (0..power)
         .scan([y, x], |[y, x], _| {
             *x += 1;
@@ -47,8 +43,7 @@ fn shoot(
     }));
 
     for [y, x] in trj {
-        // println!("{:?}", [y, x]);
-        if let (Some(&b'T'), Some(&b'.') | None) =
+        if let (Some(&b'T' | &b'H'), Some(&b'.') | None) =
             (grid.get([y, x]), grid.get([y.wrapping_sub(1), x]))
         {
             return Some([y, x]);
@@ -67,7 +62,7 @@ fn part1(mut input: String) -> QuestResult {
 
     for r in grid.rows().into_iter() {
         for (j, &x) in r.into_iter().enumerate() {
-            if x == b'T' {
+            if let b'T' | b'H' = x {
                 if let Some(h) = towers.get_mut(&j) {
                     *h += 1;
                 } else {
@@ -92,9 +87,18 @@ fn part1(mut input: String) -> QuestResult {
             })
             .unwrap();
 
-        ans += power * (height + 1);
+        let Some(spot) = grid.get_mut(hit) else {
+            panic!();
+        };
 
-        grid[hit] = b'.';
+        match *spot {
+            b'H' => ans += 2 * power * (height + 1),
+            b'T' => ans += power * (height + 1),
+            _ => panic!(),
+        }
+
+        *spot = b'.';
+
         let Some(v) = towers.get_mut(&hit[1]) else {
             panic!();
         };
@@ -107,10 +111,6 @@ fn part1(mut input: String) -> QuestResult {
     }
 
     Number(ans as i64)
-}
-
-fn part2(input: String) -> QuestResult {
-    todo!("\n{input}")
 }
 
 fn part3(input: String) -> QuestResult {
