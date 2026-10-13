@@ -135,11 +135,11 @@ fn find_best_shot(mx: u32, my: u32) -> Option<u32> {
     for delay in 0..mx.min(my) {
         let [mx, my] = [mx - delay, my - delay];
 
-        if best_height.is_some_and(|h| my <= 2 * h) {
+        if best_height.is_some_and(|h| my + 2 <= 2 * h) {
             break;
         }
 
-        if let Some((h, Reverse(score))) = (0..my.div_ceil(2))
+        if let Some((h, Reverse(score))) = (0..=my.div_ceil(2))
             .flat_map(|power| (0..3).map(move |height| (height, power)))
             .filter_map(move |(height, power)| {
                 shoot_meteor(height, power, mx, my)
@@ -152,6 +152,8 @@ fn find_best_shot(mx: u32, my: u32) -> Option<u32> {
             best_score = Some(score);
         }
     }
+
+    println!("{:?} -> {:?}", [mx, my], best_score);
 
     best_score
 }
