@@ -1,6 +1,7 @@
-use std::collections::BTreeMap;
+use std::{cmp::Reverse, collections::BTreeMap};
 
 use ndarray::ArrayView2;
+use rayon::{iter::ParallelIterator, str::ParallelString};
 
 use crate::{
     Quest,
@@ -113,6 +114,50 @@ fn part1(mut input: String) -> QuestResult {
     Number(ans as i64)
 }
 
+fn shoot_meteor(height: u32, power: u32, mx: u32, my: u32) -> Option<[u32; 2]> {
+    let stage1 = (0..=power).map(|i| [i, i + height]);
+    let stage2 = (1..power).map(|i| [power + i, power + height]);
+    let stage3 =
+        (0..=(power + height)).map(|i| [2 * power + i, power + height - i]);
+
+    let trj_proj = stage1.chain(stage2).chain(stage3);
+    let trj_met = (0..=mx).rev().zip((0..=my).rev()).map(|(x, y)| [x, y]);
+
+    trj_proj
+        .zip(trj_met)
+        .find_map(|(p, m)| (p == m).then_some(p))
+}
+
+fn find_best_shot(mx: u32, my: u32) -> Option<u32> {
+    let (_, Reverse(score)) = (0..mx.min(my))
+        .map(|delay| [mx - delay, my - delay])
+        .flat_map(|[mx, my]| {
+            (0..my.div_ceil(2))
+                .flat_map(|power| (0..3).map(move |height| (height, power)))
+                .filter_map(move |(height, power)| {
+                    shoot_meteor(height, power, mx, my)
+                        .map(|[_, y]| (y, Reverse((height + 1) * power)))
+                })
+        })
+        .max()?;
+
+    println!("{:?} -> {}", [mx, my], score);
+
+    Some(score)
+}
+
 fn part3(input: String) -> QuestResult {
-    todo!("\n{input}")
+    let ans: u32 = input
+        .par_lines()
+        .map(|l| {
+            let (x, y) = l.split_once(' ').unwrap();
+
+            let x = x.parse().unwrap();
+            let y = y.parse().unwrap();
+
+            find_best_shot(x, y).unwrap()
+        })
+        .sum();
+
+    Number(ans.into())
 }
