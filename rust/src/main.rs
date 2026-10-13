@@ -1,4 +1,4 @@
-#![feature(step_trait)]
+#![feature(step_trait, slice_split_once)]
 
 use std::{env, fmt::Display, fs::read_to_string, time::Instant};
 
@@ -8,6 +8,7 @@ mod util;
 
 mod quest1;
 mod quest10;
+mod quest11;
 mod quest2;
 mod quest3;
 mod quest4;
@@ -43,6 +44,7 @@ const QUESTS: &[Quest] = &[
     quest6::PARTS,
     quest9::PARTS,
     quest10::PARTS,
+    quest11::PARTS,
 ];
 
 fn load_input(quest: usize, part: usize, example: usize) -> String {
