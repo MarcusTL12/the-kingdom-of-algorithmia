@@ -8,7 +8,7 @@ use crate::{
     util::input_to_grid_mut,
 };
 
-pub const PARTS: Quest = [part1, part2, part3];
+pub const PARTS: Quest = [part1; 3];
 
 fn hdist(a: u8, b: u8) -> u32 {
     let diff = a.abs_diff(b) as u32;
@@ -21,14 +21,14 @@ fn part1(mut input: String) -> QuestResult {
     input.push('\n');
     let mut grid = input_to_grid_mut(unsafe { input.as_bytes_mut() });
 
-    let s = grid
-        .indexed_iter()
-        .find_map(|((y, x), v)| (*v == b'S').then_some([y, x]))
-        .unwrap();
-
     let mut queue = PriorityQueue::new();
 
-    queue.push(s, Reverse(0));
+    for s in grid
+        .indexed_iter()
+        .filter_map(|((y, x), v)| (*v == b'S').then_some([y, x]))
+    {
+        queue.push(s, Reverse(0));
+    }
 
     const DIRS: [[isize; 2]; 4] = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
@@ -67,12 +67,4 @@ fn part1(mut input: String) -> QuestResult {
     }
 
     panic!()
-}
-
-fn part2(input: String) -> QuestResult {
-    todo!("\n{input}")
-}
-
-fn part3(input: String) -> QuestResult {
-    todo!("\n{input}")
 }
