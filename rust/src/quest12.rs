@@ -1,6 +1,11 @@
-use std::{cmp::Reverse, collections::BTreeMap};
+use std::{
+    cmp::Reverse,
+    collections::{BTreeMap, HashSet, VecDeque},
+    hash::Hash,
+};
 
 use ndarray::ArrayView2;
+use priority_queue::PriorityQueue;
 use rayon::{iter::ParallelIterator, str::ParallelString};
 
 use crate::{
@@ -158,18 +163,156 @@ fn find_best_shot(mx: u32, my: u32) -> Option<u32> {
     best_score
 }
 
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
+enum ProjectileState {
+    Rising,
+    Coasting(u32),
+    Falling,
+}
+
+struct SeenPQ<K, V> {
+    queue: PriorityQueue<K, V>,
+    seen: HashSet<K>,
+}
+
+impl<K: Hash + Eq + Clone, V: Hash + Ord> SeenPQ<K, V> {
+    pub fn new() -> Self {
+        Self {
+            queue: PriorityQueue::new(),
+            seen: HashSet::new(),
+        }
+    }
+
+    pub fn push(&mut self, k: K, v: V) {
+        if !self.seen.contains(&k) {
+            self.queue.push_increase(k, v);
+        }
+    }
+
+    pub fn pop(&mut self) -> Option<(K, V)> {
+        let (k, v) = self.queue.pop()?;
+
+        self.seen.insert(k.clone());
+
+        Some((k, v))
+    }
+}
+
+fn find_best_shot_path(mx: u32, my: u32) -> Option<u32> {
+    use ProjectileState::*;
+
+    let mut queue = SeenPQ::new();
+
+    for h in 0..3 {
+        queue.push(
+            (h + 1, 1, [1, h + 1], [mx - 1, my - 1], Rising),
+            (my, Reverse(h + 1)),
+        );
+    }
+
+    while let Some((
+        (h, power, [px, py], [mx, my], state),
+        (_, Reverse(score)),
+    )) = queue.pop()
+    {
+        // println!();
+        // dbg!(h);
+        // dbg!(power);
+        // dbg!(px);
+        // dbg!(py);
+        // dbg!(mx);
+        // dbg!(my);
+        // println!("{state:?}");
+
+        if [px, py] == [mx, my] {
+            return Some(score);
+        }
+
+        if mx.min(my) == 0 {
+            continue;
+        }
+
+        match state {
+            Rising => {
+                if my > py {
+                    queue.push(
+                        (
+                            h,
+                            power + 1,
+                            [px + 1, py + 1],
+                            [mx - 1, my - 1],
+                            Rising,
+                        ),
+                        (my - 1, Reverse(h * (power + 1))),
+                    );
+
+                    queue.push(
+                        (h, power, [px, py], [mx - 1, my - 1], Rising),
+                        (my - 1, Reverse(h * power)),
+                    );
+                }
+
+                queue.push(
+                    (
+                        h,
+                        power,
+                        [px + 1, py],
+                        [mx - 1, my - 1],
+                        Coasting(power - 1),
+                    ),
+                    (my - 1, Reverse(h * power)),
+                );
+            }
+            Coasting(t) => {
+                if t == 0 {
+                    queue.push(
+                        (h, power, [px + 1, py - 1], [mx - 1, my - 1], Falling),
+                        (my - 1, Reverse(h * power)),
+                    );
+                } else {
+                    queue.push(
+                        (
+                            h,
+                            power,
+                            [px + 1, py],
+                            [mx - 1, my - 1],
+                            Coasting(t - 1),
+                        ),
+                        (my - 1, Reverse(h * power)),
+                    );
+                }
+            }
+            Falling => {
+                if py > 0 {
+                    queue.push(
+                        (h, power, [px + 1, py - 1], [mx - 1, my - 1], Falling),
+                        (my - 1, Reverse(h * power)),
+                    );
+                }
+            }
+        }
+    }
+
+    todo!()
+}
+
 fn part3(input: String) -> QuestResult {
-    let ans: u32 = input
-        .par_lines()
-        .map(|l| {
-            let (x, y) = l.split_once(' ').unwrap();
+    dbg!(find_best_shot(3839, 2904));
+    dbg!(find_best_shot_path(3839, 2904));
 
-            let x = x.parse().unwrap();
-            let y = y.parse().unwrap();
+    todo!()
 
-            find_best_shot(x, y).unwrap()
-        })
-        .sum();
+    // let ans: u32 = input
+    //     .par_lines()
+    //     .map(|l| {
+    //         let (x, y) = l.split_once(' ').unwrap();
 
-    Number(ans.into())
+    //         let x = x.parse().unwrap();
+    //         let y = y.parse().unwrap();
+
+    //         dbg!(find_best_shot_path(x, y).unwrap())
+    //     })
+    //     .sum();
+
+    // Number(ans.into())
 }
