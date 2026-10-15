@@ -2,7 +2,6 @@ use std::collections::VecDeque;
 
 use bitarray::BitArray;
 use ndarray::Array2;
-use num_traits::Zero;
 
 use crate::{
     Quest,
@@ -73,25 +72,25 @@ fn part2(input: String) -> QuestResult {
 
     grid[[0, sx]] = b'!';
 
-    let herb_mask = grid.iter().fold(0u32, |bits, &v| match v {
+    let herb_mask = grid.iter().fold(0usize, |bits, &v| match v {
         b'A'..=b'Z' => bits | 1 << (v - b'A'),
         _ => bits,
     });
 
+    let mut herb_mapping = [0; 26];
+
+    for (i, j) in BitArray([herb_mask]).trues_iter().enumerate() {
+        herb_mapping[j] = i as u8;
+    }
+
     let n_herbs = herb_mask.count_ones();
 
-    // dbg!(n_herbs);
-    assert!((herb_mask >> n_herbs).is_zero());
-    assert!(n_herbs <= 5);
+    const N: usize = 512;
 
-    // Num bits per cell to describe any combination of herbs:
-    // 2^herb_types
-    // u32: n_herbs <= 5
-    // u64: n_herbs <= 6
-    // u128: n_herbs <= 7
+    assert!(2u32.pow(n_herbs) <= N as u32 * usize::BITS);
 
     let mut queue = VecDeque::new();
-    let mut seen = Array2::from_elem(grid.dim(), BitArray::<1>::new());
+    let mut seen = Array2::from_elem(grid.dim(), BitArray::<N>::new());
 
     queue.push_back(([0, sx], 0u16, 0));
     seen[[0, sx]] |= 1.into();
@@ -117,8 +116,8 @@ fn part2(input: String) -> QuestResult {
                         queue.push_back((newpos, herbs, l + 1));
                     }
                 }
-                b'A'..=b'E' => {
-                    let new_herb_bit = 1 << (v - b'A');
+                b'A'..=b'Z' => {
+                    let new_herb_bit = 1 << herb_mapping[(v - b'A') as usize];
                     let new_herbs = herbs | new_herb_bit;
 
                     if !seen[newpos][new_herbs as usize] {
