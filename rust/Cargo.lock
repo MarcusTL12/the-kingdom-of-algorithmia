@@ -51,6 +51,7 @@ dependencies = [
  "bitarray",
  "home",
  "ndarray",
+ "num-integer",
  "num-traits",
  "priority-queue",
  "rayon",
