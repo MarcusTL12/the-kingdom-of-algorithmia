@@ -101,7 +101,7 @@ fn accumulate_coins(steps: &[u32], wheels: &[Vec<&str>], n: u32) -> u32 {
 fn part2(input: String) -> QuestResult {
     let (steps, wheels) = parse_input(&input);
 
-    let period = wheels.iter().map(|w| w.len() as u32).fold(1, lcm);
+    let period = wheels.iter().map(|w| w.len() as u32).reduce(lcm).unwrap();
 
     const TARGET: u64 = 202420242024;
 
