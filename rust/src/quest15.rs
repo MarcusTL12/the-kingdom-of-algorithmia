@@ -1,5 +1,6 @@
 use std::collections::VecDeque;
 
+use bitarray::BitArray;
 use ndarray::Array2;
 use num_traits::Zero;
 
@@ -9,7 +10,7 @@ use crate::{
     util::input_to_grid_mut,
 };
 
-pub const PARTS: Quest = [part1, part2, part3];
+pub const PARTS: Quest = [part1, part2, part2];
 
 const DIRS: [[isize; 2]; 4] = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
@@ -90,14 +91,12 @@ fn part2(input: String) -> QuestResult {
     // u128: n_herbs <= 7
 
     let mut queue = VecDeque::new();
-    let mut seen = Array2::from_elem(grid.dim(), 0u32);
+    let mut seen = Array2::from_elem(grid.dim(), BitArray::<1>::new());
 
-    queue.push_back(([0, sx], 0u8, 0));
-    seen[[0, sx]] |= 1;
+    queue.push_back(([0, sx], 0u16, 0));
+    seen[[0, sx]] |= 1.into();
 
     while let Some((pos, herbs, l)) = queue.pop_front() {
-        let herbs_bit = 1 << herbs;
-
         for dir in DIRS {
             let Some(newpos) =
                 pos[0].checked_add_signed(dir[0]).and_then(|np0| {
@@ -113,18 +112,17 @@ fn part2(input: String) -> QuestResult {
 
             match v {
                 b'.' => {
-                    if (seen[newpos] & herbs_bit).is_zero() {
-                        seen[newpos] |= herbs_bit;
+                    if !seen[newpos][herbs as usize] {
+                        seen[newpos].set(herbs as usize, true);
                         queue.push_back((newpos, herbs, l + 1));
                     }
                 }
                 b'A'..=b'E' => {
                     let new_herb_bit = 1 << (v - b'A');
                     let new_herbs = herbs | new_herb_bit;
-                    let new_herbs_bit = 1 << new_herbs;
 
-                    if (seen[newpos] & new_herbs_bit).is_zero() {
-                        seen[newpos] |= new_herbs_bit;
+                    if !seen[newpos][new_herbs as usize] {
+                        seen[newpos].set(new_herbs as usize, true);
                         queue.push_back((newpos, new_herbs, l + 1));
                     }
                 }
@@ -140,8 +138,4 @@ fn part2(input: String) -> QuestResult {
     }
 
     panic!()
-}
-
-fn part3(input: String) -> QuestResult {
-    todo!("\n{input}")
 }
